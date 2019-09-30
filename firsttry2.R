@@ -29,7 +29,7 @@ i(10)
 intim <- function(b) {
   bk <- b
   itt <-0
-  while(abs(bk-(bk+i(bk)*s(bk)))>0.01) {
+  while(abs(i(bk)*s(bk))>0.01) {
     itt<- itt+1
     bk=bk+i(bk)*s(bk)
     if (itt%%20==0)
