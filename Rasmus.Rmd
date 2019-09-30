@@ -5,18 +5,38 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(numDeriv)
+library(tidyverse)
 ```
 
 
 ```{r}
 n <- 10
-
+ab <- c(1,2)
 x_i <- 1:n
-y_i <- runif(n, min = 0, max = 1)
+y_i <- rnorm(n, mean = ab[1] * ab[2]^x_i, sd = 1)
+
+likelihood <- function(ab = ab) {
+  prod(1/sqrt(2*pi) * exp(((ab[1] * ab[2]^x_i - y_i)^2)/2))
+}
+
+likelihood(ab)
+optim(ab, likelihood, hessian = T)
+
 b <- function(b, c1, c2) {
   b^(c1*x_i-c2)
 }
 
+test_a <- seq(0,3,length = 10)
+test_b <- seq(0,3,length = 10)
+
+likelihood(c(test_a, test_b))
+
+
+apply(cbind(test_a,test_b), 1, likelihood)
+
+likelihood(c(1,2))
 
 ```
 
