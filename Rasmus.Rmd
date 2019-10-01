@@ -12,50 +12,59 @@ library(tidyverse)
 
 
 ```{r}
-n <- 10
-ab <- c(1,2)
+n <- 500
+ab <- c(1,1)
 x_i <- 1:n
-y_i <- rnorm(n, mean = ab[1] * ab[2]^x_i, sd = 1)
+# y_i <- rnorm(n, mean = ab[1] * ab[2]^x_i, sd = 1)
+y_i <- rnorm(n, 0, sd = 1)
 
-
-likelihood <- function(parm = ab) {
-  prod(exp(((parm[1] * parm[2]^x_i - y_i)^2)/2))
+likelihood <- function(ab) {
+  -prod(exp(((ab[1] * ab[2]^x_i - y_i)^2)/2))
 }
-
 likelihood(ab)
 optim(ab, likelihood)
 
+# log_lik <- function(ab) {
+#   -sum(- ((ab[1] * ab[2]^x_i - y_i)^2)/2 )
+# }
+# optim(ab, log_lik)
+
 b <- function(b, c1, c2 = 0) {
-  b^(c1*x_i-c2)
+  b^(c1*x_i + c2)
 }
 
 s <- function(b) {
-  a <- sum(y_i)/sum(b(b,1))
+  a <- sum(y_i)/sum(b(b,1,0))
   c(- sum(a * b(b,2)) + sum(b(b,1) * y_i), 
     - sum(a^2 * b(b,2,-1) * x_i ) + sum(a * x_i * b(b,1,-1) * y_i))
 }
+s(ab[2])
 
 i <- function(b) {
-  a <- sum(y_i)/sum(b(b,1))
+  a <- sum(y_i)/sum(b(b,1,0))
   i_mat <- matrix(nrow = 2, ncol = 2)
   i_mat[1,1] <- sum(b(b,2))
   i_mat[1,2] <- sum(a * 2 * x_i * b(b,2,-1) ) - sum(x_i * b(b,2,-1) * a)
   i_mat[2,1] <- sum(a * 2 * x_i * b(b,2,-1) ) - sum(x_i * b(b,2,-1) * a)
   i_mat[2,2] <- sum(a^2 * (2 * x_i -1) * b(b,2,-2) * x_i) - sum(a^2 * x_i *(x_i -1) * b(b,2,-2))
-  solve(i_mat)[2,2]
+  1/i_mat[2,2]
 }
+i(ab[2])
 
-i(2)
-
-b_stjerne <- function(b_stj) {
+b_stjerne <- function(b_stj, score = s, info = i) {
   b_hat <- b_stj
-  while (abs(i(b_hat) * s(b_hat)[2]) < 1e-5) {
-    b_hat <- b_stj + i(b_stj)[2,2] * s(b_stj)[2]
+  while (abs(info(b_hat) * score(b_hat)[2]) > 1e-5) {
+    b_hat <- b_hat + info(b_hat) * score(b_hat)[2]
+    print(b_hat)
   }
   b_hat
 }
+b_hat <- b_stjerne(1.2); b_hat
+a_hat <- sum(y_i)/sum(b(b_hat,1,0)); a_hat
+j22 <- sum(a_hat^2 * (2*x_i -1) * b(b_hat,2,-2) * x_i ) - sum(a_hat * x_i * (x_i -1) * b(b_hat,1,-2) *y_i)
+wald_test <- (b_hat - 1)/sqrt(j22^(-1)); wald_test
+conf_int <- c(b_hat - 1.96 * sqrt(j22^-1), b_hat + 1.96 * sqrt(j22^-1)); conf_int
 
-b_stjerne(2)
 
 ```
 
