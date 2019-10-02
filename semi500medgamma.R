@@ -14,16 +14,16 @@ betahat <- rep(0,n)
 ahat <- rep(0,n)
 gammahat <- rep(0,n)
 resulthypotese <- rep(0,n)
-bstar <- 2
-crit = pchisq(0.05,df=2,lower.tail = FALSE)
+bstar <- 1.1
+crit = pchisq(0.05,df=3,lower.tail = FALSE)
 beta <- function(b,c1 = 1,c2 = 0) {
   b ^ (c1 * x_i + c2)
 }
 
 for (ii in 1:n) {
   yi <- rnorm(x_icount, mean=0, sd=1)
-  likelihood <- function(a,b) {
-    1 / sqrt(2*pi)^x_icount * prod(exp (( a * b ^x_i -yi)^2)/2)
+  likelihood <- function(a,b,g) {
+    1 / sqrt(2*pi)^x_icount * prod(exp (( a * b ^x_i -yi + g)^2)/2)
   }
   
   s <- function(b) {
@@ -79,12 +79,12 @@ for (ii in 1:n) {
   dhat_s <- sum(yi*beta(betahat[ii]))
   ahat[ii] <- (chat_s-dhat_s)/(bhat_s-ahat_s)
   gammahat[ii] <- 1 / n * sum(ahat[ii]*beta(betahat[ii]))- sum(yi)
-  lmle <- likelihood(ahat[ii],betahat[ii])
-  lognorm <- function(a,b) {
-    -2*log(lmle/likelihood(0,1))
+  lmle <- likelihood(ahat[ii],betahat[ii], gammahat[ii])
+  lognorm <- function(a,b,g) {
+    -2*log(lmle/likelihood(0,1,0))
   }
   
-  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii])<=crit
+  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii], gammahat[ii])<=crit
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
   j33y <- 1 / x_icount
