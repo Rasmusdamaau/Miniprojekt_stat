@@ -20,7 +20,7 @@ bet.star <- 1.1
 
 Der defineres først to funktioner, som bliver anvendelige senere
 ```{r}
-a <- sum(bet.star^x_i)
+a <- sum(bet.star^(2*x_i))
 b <- (sum(bet.star^x_i)/n)*sum(bet.star^x_i)
 c <- (sum(bet.star^x_i)/n)*sum(y_i)
 d <- sum(y_i*bet.star^x_i)
@@ -39,15 +39,18 @@ i.bet <- function(bet.s){
 }
 
 s.bet <- function(bet.s){
-  sum((alpha*bet.s^x_i+gamma-y_i)*alpha*bet.s^(x_i-1)*x_i)
+  -sum((alpha*bet.s^x_i+gamma-y_i)*alpha*bet.s^(x_i-1)*x_i)
 }
 ```
 
 Nu er alle variablene implementeret, så det er nu muligt at estimere beta
 
 ```{r}
-while (abs(bet-bet.star)>0.01) {
-  
+bet.star <- 2222
+bet <- bet.star
+
+while (abs(s.bet(bet))>0.01) {
+  bet <- bet + i.bet(bet)^(-1)*s.bet(bet)
 }
 ```
 
