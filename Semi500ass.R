@@ -1,6 +1,6 @@
 library("tidyverse")
 x_icount <- 10
-n <- 50
+n <- 100
 x_i <- 1:x_icount
 waldtestb <- rep(0,n)
 conff1b <- matrix(nrow=n, ncol=2)
@@ -10,10 +10,16 @@ limits <- rep(0,n)
 errors <- rep(0,n)
 betahat <- rep(0,n)
 ahat <- rep(0,n)
+resulthypotese <- rep(0,n)
+beta <- function(b,c1,c2 = 0) {
+  b ^ (c1 * x_i + c2)
+}
+crit = pchisq(0.05,df=2,lower.tail = FALSE)
+
 for (ii in 1:n) {
   yi <- rnorm(x_icount, mean=0, sd=1)
-  beta <- function(b,c1,c2 = 0) {
-    b ^ (c1 * x_i + c2)
+  likelihood <- function(a,b) {
+    1 / sqrt(2*pi)^x_icount * prod(exp (( a * b ^x_i -yi)^2)/2)
   }
   
   s <- function(b) {
@@ -53,6 +59,11 @@ for (ii in 1:n) {
   }
   betahat[ii] <-  intim(2, s, i)[1]
   ahat[ii] <- sum(yi)/sum(beta(betahat[ii],1,0))
+  lmle <- likelihood(ahat[ii],betahat[ii])
+  lognorm <- function(a,b) {
+    -2*log(lmle/likelihood(0,1))
+  }
+  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii])<=crit
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
   waldtesta[ii]  <- ((ahat[ii]-0)^2)/ j11y
@@ -71,9 +82,19 @@ length(confresula)
 cat("Hvilke betahat waldtest ligger inde for confidence intervallet", "\n")
 confresulb <- which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb); confresulb
 length(confresulb)
-ahat[which(ahat<=1e-16)]=0
-ggplot(as.data.frame(ahat), aes(y=as.data.frame(ahat))) +
-  geom_area(stat="bin") +
-  scale_y_continuous()
+cat("Number of accepted H0 hypothesis", "\n")
+sum(resulthypotese)
+ahat_plot <- data.frame(x=1:n, y= ahat)
+betahat_plot <- data.frame(x=1:n, y= betahat)
+ahat_betahat <- data.frame(x= ahat, y=betahat)
+ggplot(ahat_plot, aes(x,y)) +
+  geom_point() + 
+  scale_y_continuous(limits=c(-1,1))
+ggplot(betahat_plot, aes(x,y)) +
+  geom_point() +
+  scale_y_continuous(limits=c(0,5))
+ggplot(ahat_betahat, aes(x,y)) +
+  geom_point(size = 0.7) + 
+  scale_y_continuous(limits=c(0.6,2.5)) +
+  scale_x_continuous(limits=c(-0.8,0.8))
 
-view(ahat)
