@@ -2,17 +2,17 @@ library("tidyverse")
 x_icount <- 50
 n <- 100
 x_i <- 1:x_icount
-waldtestb <- rep(0,n)
-conff1b <- matrix(nrow=n, ncol=2)
 waldtesta <- rep(0,n)
+waldtestb <- rep(0,n)
+waldtestg <- rep(0,n)
+conff1b <- matrix(nrow=n, ncol=2)
 conff1a <- matrix(nrow=n, ncol=2)
+conff1g <- matrix(nrow=n, ncol=2)
 limits <- rep(0,n)
 errors <- rep(0,n)
 betahat <- rep(0,n)
 ahat <- rep(0,n)
-waldtestg <- rep(0,n)
 gammahat <- rep(0,n)
-conff1g <- matrix(nrow=n, ncol=2)
 resulthypotese <- rep(0,n)
 crit = pchisq(0.05,df=2,lower.tail = FALSE)
 beta <- function(b,c1 = 1,c2 = 0) {

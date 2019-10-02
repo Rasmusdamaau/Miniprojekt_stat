@@ -2,19 +2,19 @@ library("tidyverse")
 x_icount <- 10
 n <- 100
 x_i <- 1:x_icount
+waldtesta <- rep(0,n)
 waldtestb <- rep(0,n)
 conff1b <- matrix(nrow=n, ncol=2)
-waldtesta <- rep(0,n)
 conff1a <- matrix(nrow=n, ncol=2)
 limits <- rep(0,n)
 errors <- rep(0,n)
 betahat <- rep(0,n)
 ahat <- rep(0,n)
 resulthypotese <- rep(0,n)
+crit = pchisq(0.05,df=2,lower.tail = FALSE)
 beta <- function(b,c1,c2 = 0) {
   b ^ (c1 * x_i + c2)
 }
-crit = pchisq(0.05,df=2,lower.tail = FALSE)
 
 for (ii in 1:n) {
   yi <- rnorm(x_icount, mean=0, sd=1)
@@ -43,24 +43,20 @@ for (ii in 1:n) {
     while(abs(score(bk) * fish(bk))>0.001) {
       itt<- itt + 1
       bk = bk + fish(bk) * score(bk)
-      if (itt %% 500 == 0) {
-        print(bk)
+      if (!is.finite(score(bk))==TRUE | !is.finite((fish(bk)))==TRUE) {
+        cat("ERROR!", "\n")
+        itt2 <- 1
+        break
       }
-        if (itt>5000) {
-          cat("break", "\n")
-          itt1 <- 1
-          break
-        }
-          if (!is.finite(score(bk))==TRUE | !is.finite((fish(bk)))==TRUE) {
-              cat("ERROR!", "\n")
-              itt2 <- 1
-              break
-          }
+      if (itt>5000) {
+        cat("break", "\n")
+        itt1 <- 1
+        break(intim)
+      }
     }
     c(bk,itt, itt1, itt2)
   }
-  
-  betahat[ii] <-  intim(2, s, i)[1]
+  betahat[ii] <-  intim(2, s, i)[1] 
   ahat[ii] <- sum(yi)/sum(beta(betahat[ii],1,0))
   lmle <- likelihood(ahat[ii],betahat[ii])
   
