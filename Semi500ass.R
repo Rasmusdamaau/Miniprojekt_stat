@@ -92,12 +92,15 @@ betahat_plot <- data.frame(x=1:n, y= betahat)
 ahat_betahat <- data.frame(x= ahat, y=betahat)
 ggplot(ahat_plot, aes(x,y)) +
   geom_point() + 
-  scale_y_continuous(limits=c(-1,1))
+  scale_y_continuous(limits=c(-1,1)) + 
+  labs(x = "index", y= "alpha")
 ggplot(betahat_plot, aes(x,y)) +
   geom_point() +
-  scale_y_continuous(limits=c(0,5))
+  scale_y_continuous(limits=c(0,5)) +
+  labs(x = "index", y= "beta")
 ggplot(ahat_betahat, aes(x,y)) +
   geom_point(size = 0.7) + 
   scale_y_continuous(limits=c(0.6,2.5)) +
-  scale_x_continuous(limits=c(-0.8,0.8))
+  scale_x_continuous(limits=c(-0.8,0.8)) + 
+  labs(x = "alpha", y= "beta")
 

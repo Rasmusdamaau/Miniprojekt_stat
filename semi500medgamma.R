@@ -1,5 +1,5 @@
 library("tidyverse")
-x_icount <- 50
+x_icount <- 100
 n <- 100
 x_i <- 1:x_icount
 waldtesta <- rep(0,n)
@@ -21,7 +21,7 @@ beta <- function(b,c1 = 1,c2 = 0) {
 }
 
 for (ii in 1:n) {
-  yi <- rnorm(x_icount, mean=0, sd=1)
+  yi <- rnorm(x_icount, mean=1, sd=1)
   likelihood <- function(a,b,g) {
     1 / sqrt(2*pi)^x_icount * prod(exp (( a * b ^x_i -yi + g)^2)/2)
   }
@@ -118,14 +118,18 @@ gammahat_plot <- data.frame(x=1:n, y=gammahat)
 ahat_betahat <- data.frame(x= ahat, y=betahat)
 ggplot(ahat_plot, aes(x,y)) +
   geom_point() + 
-  scale_y_continuous(limits=c(-1,1))
+  scale_y_continuous(limits=c(-1,1)) +
+  labs(x = "index", y= "alpha")
 ggplot(betahat_plot, aes(x,y)) +
   geom_point() +
-  scale_y_continuous(limits=c(0,5))
+  scale_y_continuous(limits=c(0,5))+
+  labs(x = "index", y= "beta")
 ggplot(gammahat_plot, aes(x,y)) +
-  geom_point()
+  geom_point() +
+  labs(x = "index", y= "gamma")
 ggplot(ahat_betahat, aes(x,y)) +
   geom_point(size = 0.7) + 
   scale_y_continuous(limits=c(0.6,2.5)) +
-  scale_x_continuous(limits=c(-0.8,0.8))
+  scale_x_continuous(limits=c(-0.8,0.8)) +
+  labs(x = "alpha", y= "beta")
 
