@@ -14,6 +14,7 @@ betahat <- rep(0,n)
 ahat <- rep(0,n)
 gammahat <- rep(0,n)
 resulthypotese <- rep(0,n)
+bstar <- 2
 crit = pchisq(0.05,df=2,lower.tail = FALSE)
 beta <- function(b,c1 = 1,c2 = 0) {
   b ^ (c1 * x_i + c2)
@@ -70,7 +71,8 @@ for (ii in 1:n) {
     }
     c(bk,itt, itt1, itt2)
   }
-  betahat[ii] <-  intim(1.2, s, i)[1] 
+  resultatintim <- intim(bstar, s, i)
+  betahat[ii] <-  resultatintim[1] 
   ahat_s <- sum(beta(betahat[ii]))
   bhat_s <- (sum(beta(betahat[ii]))) / n * sum(beta(betahat[ii])) 
   chat_s <- (sum(beta(betahat[ii]))) / n * sum(yi)
@@ -95,8 +97,8 @@ for (ii in 1:n) {
   conff1a[ii,2] <- ahat[ii] + 1.96 * sqrt(abs(j11y))
   conff1g[ii,1] <- gammahat[ii] - 1.96 * sqrt(abs(j33y))
   conff1g[ii,2] <- gammahat[ii] + 1.96 * sqrt(abs(j33y))
-  limits[ii] <- intim(2, s, i)[3]
-  errors[ii] <- intim(2, s, i)[4]
+  limits[ii] <- resultatintim[3]
+  errors[ii] <- resultatintim[4]
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
 cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
@@ -112,6 +114,7 @@ cat("Number of accepted H0 hypothesis", "\n")
 sum(resulthypotese)
 ahat_plot <- data.frame(x=1:n, y= ahat)
 betahat_plot <- data.frame(x=1:n, y= betahat)
+gammahat_plot <- data.frame(x=1:n, y=gammahat)
 ahat_betahat <- data.frame(x= ahat, y=betahat)
 ggplot(ahat_plot, aes(x,y)) +
   geom_point() + 
@@ -119,6 +122,8 @@ ggplot(ahat_plot, aes(x,y)) +
 ggplot(betahat_plot, aes(x,y)) +
   geom_point() +
   scale_y_continuous(limits=c(0,5))
+ggplot(gammahat_plot, aes(x,y)) +
+  geom_point()
 ggplot(ahat_betahat, aes(x,y)) +
   geom_point(size = 0.7) + 
   scale_y_continuous(limits=c(0.6,2.5)) +

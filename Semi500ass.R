@@ -10,6 +10,7 @@ limits <- rep(0,n)
 errors <- rep(0,n)
 betahat <- rep(0,n)
 ahat <- rep(0,n)
+bstar <- 2
 resulthypotese <- rep(0,n)
 crit = pchisq(0.05,df=2,lower.tail = FALSE)
 beta <- function(b,c1,c2 = 0) {
@@ -56,7 +57,8 @@ for (ii in 1:n) {
     }
     c(bk,itt, itt1, itt2)
   }
-  betahat[ii] <-  intim(2, s, i)[1] 
+  resultatintim <- intim(bstar, s, i)
+  betahat[ii] <-  resultatintim[1] 
   ahat[ii] <- sum(yi)/sum(beta(betahat[ii],1,0))
   lmle <- likelihood(ahat[ii],betahat[ii])
   
@@ -73,8 +75,8 @@ for (ii in 1:n) {
   conff1b[ii,2] <- betahat[ii] + 1.96 * sqrt(abs(j22y))
   conff1a[ii,1] <- ahat[ii] - 1.96 * sqrt(abs(j11y))
   conff1a[ii,2] <- ahat[ii] + 1.96 * sqrt(abs(j11y))
-  limits[ii] <- intim(2, s, i)[3]
-  errors[ii] <- intim(2, s, i)[4]
+  limits[ii] <- resultatintim[3]
+  errors[ii] <- resultatintim[4]
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
 cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
