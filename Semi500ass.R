@@ -10,6 +10,10 @@ for (ii in 1:500) {
     b ^ (c1 * x_i + c2)
   }
   
+  s <- function(b) {
+    a <- sum(yi)/sum(beta(b,1,0))
+    - sum( a^2 * beta(b,2,-1) * x_i)  +  sum(a * x_i * beta(b,1,-1) * yi)
+  }
   i <- function(b) {
     a <- sum(yi)/sum(beta(b,1))
     ma <- sum(a ^ 2 * 2 * (x_i-1) * beta(b,2,-2) * x_i)-sum(a ^ 2 * x_i * (x_i-1) * beta(b,2,-2))
