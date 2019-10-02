@@ -26,6 +26,7 @@ for (ii in 1:n) {
     a <- sum(yi)/sum(beta(b,1,0))
     - sum( a^2 * beta(b,2,-1) * x_i)  +  sum(a * x_i * beta(b,1,-1) * yi)
   }
+  
   i <- function(b) {
     a <- sum(yi)/sum(beta(b,1))
     ma <- sum(a ^ 2 * 2 * (x_i-1) * beta(b,2,-2) * x_i)-sum(a ^ 2 * x_i * (x_i-1) * beta(b,2,-2))
@@ -42,27 +43,31 @@ for (ii in 1:n) {
     while(abs(score(bk) * fish(bk))>0.001) {
       itt<- itt + 1
       bk = bk + fish(bk) * score(bk)
-      if (itt %% 500 == 0)
+      if (itt %% 500 == 0) {
         print(bk)
-      if (itt>5000) {
-        cat("break", "\n")
-        itt1 <- 1
-        break
       }
-      if (!is.finite(score(bk))==TRUE | !is.finite((fish(bk)))==TRUE) {
-        cat("ERROR!", "\n")
-        itt2 <- 1
-        break
-      }
+        if (itt>5000) {
+          cat("break", "\n")
+          itt1 <- 1
+          break
+        }
+          if (!is.finite(score(bk))==TRUE | !is.finite((fish(bk)))==TRUE) {
+              cat("ERROR!", "\n")
+              itt2 <- 1
+              break
+          }
     }
     c(bk,itt, itt1, itt2)
   }
+  
   betahat[ii] <-  intim(2, s, i)[1]
   ahat[ii] <- sum(yi)/sum(beta(betahat[ii],1,0))
   lmle <- likelihood(ahat[ii],betahat[ii])
+  
   lognorm <- function(a,b) {
     -2*log(lmle/likelihood(0,1))
   }
+  
   resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii])<=crit
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
