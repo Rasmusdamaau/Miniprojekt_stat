@@ -7,22 +7,54 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Den 3. model
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Først defineres $x_i$ og der generes der n $y_i$ obervationer, samt defineres $\beta^*$ som skal benyttes senere.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+n <- 20
+x_i <- 1:n
+y_i <- rnorm(n,mean = 0, sd=1)
+bet.star <- 1.1
 ```
 
-## Including Plots
+Der defineres først to funktioner, som bliver anvendelige senere
+```{r}
+a <- sum(bet.star^(2*x_i))
+b <- (sum(bet.star^x_i)/n)*sum(bet.star^x_i)
+c <- (sum(bet.star^x_i)/n)*sum(y_i)
+d <- sum(y_i*bet.star^x_i)
 
-You can also embed plots, for example:
+alpha <- (c-d)/(b-a)
+gamma <- 1/n * sum(alpha*bet.star-y_i)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Målet er nu at estimere $\beta$ ved funktionen $\widehat{\beta}=\beta^*+j(\beta^*)^{-1}S(\beta^*)$, hvorfor $j(\beta^*)^{-1}$ og $S(\beta^*)$ defineres som funktioner
+
+```{r}
+i.bet <- function(bet.s){
+  sum(x_i*alpha*bet.s^(x_i-2) * (2*x_i-1)*alpha*bet.s^x_i + gamma*(x_i-1) -
+                                               y_i*(x_i-1))
+}
+
+s.bet <- function(bet.s){
+  -sum((alpha*bet.s^x_i+gamma-y_i)*alpha*bet.s^(x_i-1)*x_i)
+}
+```
+
+Nu er alle variablene implementeret, så det er nu muligt at estimere beta
+
+```{r}
+bet.star <- 2222
+bet <- bet.star
+
+while (abs(s.bet(bet))>0.01) {
+  bet <- bet + i.bet(bet)^(-1)*s.bet(bet)
+}
+```
+
+
+
+
+
