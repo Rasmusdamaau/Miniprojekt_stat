@@ -1,15 +1,17 @@
-n <- 500
-x_i <- 1:n
-waldtestb <- c(seq(1,n,1))
+library("tidyverse")
+x_icount <- 10
+n <- 50
+x_i <- 1:x_icount
+waldtestb <- rep(0,n)
 conff1b <- matrix(nrow=n, ncol=2)
-waldtesta <- c(seq(1,n,1))
+waldtesta <- rep(0,n)
 conff1a <- matrix(nrow=n, ncol=2)
 limits <- rep(0,n)
 errors <- rep(0,n)
 betahat <- rep(0,n)
 ahat <- rep(0,n)
-for (ii in 1:25) {
-  yi <- rnorm(n, mean=0, sd=1)
+for (ii in 1:n) {
+  yi <- rnorm(x_icount, mean=0, sd=1)
   beta <- function(b,c1,c2 = 0) {
     b ^ (c1 * x_i + c2)
   }
@@ -64,6 +66,14 @@ for (ii in 1:25) {
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
 cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
-which(conff1a[,1] < waldtesta & conff1a[,2] > waldtesta)
+confresula <- which(conff1a[,1] < waldtesta & conff1a[,2] > waldtesta); confresula
+length(confresula)
 cat("Hvilke betahat waldtest ligger inde for confidence intervallet", "\n")
-which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb)
+confresulb <- which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb); confresulb
+length(confresulb)
+ahat[which(ahat<=1e-16)]=0
+ggplot(as.data.frame(ahat), aes(y=as.data.frame(ahat))) +
+  geom_area(stat="bin") +
+  scale_y_continuous()
+
+view(ahat)
