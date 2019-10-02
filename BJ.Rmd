@@ -15,46 +15,53 @@ Først defineres $x_i$ og der generes der n $y_i$ obervationer, samt defineres $
 n <- 20
 x_i <- 1:n
 y_i <- rnorm(n,mean = 0, sd=1)
-bet.star <- 1.1
 ```
 
 Der defineres først to funktioner, som bliver anvendelige senere
 ```{r}
-a <- sum(bet.star^(2*x_i))
-b <- (sum(bet.star^x_i)/n)*sum(bet.star^x_i)
-c <- (sum(bet.star^x_i)/n)*sum(y_i)
-d <- sum(y_i*bet.star^x_i)
+a <-  function(bet.s) sum(bet.s^(2*x_i))
+b <-  function(bet.s) (sum(bet.s^x_i)/n)*sum(bet.s^x_i)
+c <-  function(bet.s) (sum(bet.s^x_i)/n)*sum(y_i)
+d <-  function(bet.s) sum(y_i*bet.s^x_i)
 
-alpha <- (c-d)/(b-a)
-gamma <- 1/n * sum(alpha*bet.star-y_i)
+alpha <- function(bet.s){
+  a <- sum(bet.s^(2*x_i))
+  b <- (sum(bet.s^x_i)/n)*sum(bet.s^x_i)
+  c <- (sum(bet.s^x_i)/n)*sum(y_i)
+  d <- sum(y_i*bet.s^x_i)
+  (c-d)/(b-a)
+}
 
+gamma <- function(bet.s) 1/n * sum(alpha(bet.s)*bet.s-y_i)
 ```
 
 Målet er nu at estimere $\beta$ ved funktionen $\widehat{\beta}=\beta^*+j(\beta^*)^{-1}S(\beta^*)$, hvorfor $j(\beta^*)^{-1}$ og $S(\beta^*)$ defineres som funktioner
 
 ```{r}
-i.bet <- function(bet.s){
-  sum(x_i*alpha*bet.s^(x_i-2) * (2*x_i-1)*alpha*bet.s^x_i + gamma*(x_i-1) -
-                                               y_i*(x_i-1))
+j.bet <- function(bet.s){
+  sum(x_i*alpha(bet.s)*bet.s^(x_i-2) * (2*x_i-1)*alpha(bet.s)*bet.s^x_i + gamma(bet.s)*(x_i-1) - y_i*(x_i-1))
 }
 
+j.bet(3)
+
 s.bet <- function(bet.s){
-  -sum((alpha*bet.s^x_i+gamma-y_i)*alpha*bet.s^(x_i-1)*x_i)
+  -sum((alpha(bet.s)*bet.s^x_i+gamma(bet.s)-y_i)*alpha(bet.s)*bet.s^(x_i-1)*x_i)
 }
+
+s.bet(3)
+
 ```
 
 Nu er alle variablene implementeret, så det er nu muligt at estimere beta
 
 ```{r}
-bet.star <- 2222
-bet <- bet.star
+bet_0 <- 30
+bet <- bet_0
 
 while (abs(s.bet(bet))>0.01) {
-  bet <- bet + i.bet(bet)^(-1)*s.bet(bet)
+  bet <- bet + j.bet(bet)^(-1)*s.bet(bet)
+  print(bet)
 }
 ```
 
-
-
-
-
+Nu kan værdien for beta indsættes i de funktiner for $\alpha$ og $\gamma$.
