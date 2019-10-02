@@ -1,10 +1,14 @@
 n <- 500
 x_i <- 1:n
-waldtest <- c(seq(1,n,1))
-conff1 <- matrix(nrow=n, ncol=2)
-limits <- c(seq(0,n,1))*0
-errors <- c(seq(0,n,1))*0
-for (ii in 1:500) {
+waldtestb <- c(seq(1,n,1))
+conff1b <- matrix(nrow=n, ncol=2)
+waldtesta <- c(seq(1,n,1))
+conff1a <- matrix(nrow=n, ncol=2)
+limits <- rep(0,n)
+errors <- rep(0,n)
+betahat <- rep(0,n)
+ahat <- rep(0,n)
+for (ii in 1:25) {
   yi <- rnorm(n, mean=0, sd=1)
   beta <- function(b,c1,c2 = 0) {
     b ^ (c1 * x_i + c2)
@@ -45,15 +49,21 @@ for (ii in 1:500) {
     }
     c(bk,itt, itt1, itt2)
   }
-  betahat <-  intim(2, s, i)[1]
-  ahat <- a <- sum(yi)/sum(beta(betahat,1,0))
-  j22y <- 1 / (sum(ahat * (2 * x_i - 1) * beta(betahat,2,-1) * x_i) -sum(ahat * x_i *(x_i - 1)* beta(betahat, 1, 0 ) * yi))
-  waldtest[ii] <- (betahat-1) ^ 2 / j22y
-  conff1[ii,1] <- betahat - 1.96 * sqrt(i(betahat))
-  conff1[ii,2] <- betahat + 1.96 * sqrt(i(betahat))
+  betahat[ii] <-  intim(2, s, i)[1]
+  ahat[ii] <- sum(yi)/sum(beta(betahat[ii],1,0))
+  j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
+  j11y <- 1 / (sum(beta(betahat[ii],2,0)))
+  waldtesta[ii]  <- ((ahat[ii]-0)^2)/ j11y
+  waldtestb[ii] <- (betahat[ii]-1) ^ 2 / j22y
+  conff1b[ii,1] <- betahat[ii] - 1.96 * sqrt(abs(j22y))
+  conff1b[ii,2] <- betahat[ii] + 1.96 * sqrt(abs(j22y))
+  conff1a[ii,1] <- ahat[ii] - 1.96 * sqrt(abs(j11y))
+  conff1a[ii,2] <- ahat[ii] + 1.96 * sqrt(abs(j11y))
   limits[ii] <- intim(2, s, i)[3]
   errors[ii] <- intim(2, s, i)[4]
-  waldtest
-  conff1
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
+cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
+which(conff1a[,1] < waldtesta & conff1a[,2] > waldtesta)
+cat("Hvilke betahat waldtest ligger inde for confidence intervallet", "\n")
+which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb)
