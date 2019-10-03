@@ -45,7 +45,7 @@ for (ii in 1:n) {
     c_s <- (sum(beta(b))) / n * sum(yi)
     d_s <- sum(yi*beta(b))
     sahat <- (c_s-d_s)/(b_s-a_s)
-    gamma <- 1 / n * sum(sahat*beta(b))- sum(yi)
+    gamma <- 1 / n * sum(sahat*beta(b))- sum(yi) 
     imi <- sum(x_i * sahat * beta(b,1,-2) * ((2*x_i-1) * sahat *beta(b) + 
                                                gamma * (x_i-1) - ((sahat * beta(b) + gamma)) *(x_i -1)  ))
     imi^-1
@@ -87,7 +87,8 @@ for (ii in 1:n) {
     -2*log(likelihood(a,b,g)/lmle)
   }
   
-  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii], gamma_nul)<=crit
+  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii], gamma_nul)<=crit #Beta og alpha afhænger af 
+  #gamma, derfor er dette ikke korrekt.
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
   j33y <- 1 / x_icount

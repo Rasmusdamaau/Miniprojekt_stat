@@ -1,5 +1,5 @@
 library("tidyverse")
-x_icount <- 10
+x_icount <- 20
 n <- 1
 x_i <- 1:20
 a_nul <- 0
@@ -68,7 +68,7 @@ for (ii in 1:n) {
     -2*log(likelihood(a,b)/lmle)
   }
   
-  resulthypotese[ii] <- lognorm(ahat[ii], beta_nul)<=crit
+  resulthypotese[ii] <- lognorm(sum(yi)/20, beta_nul)<=crit #Alpha afhænger af beta, beta_nul indsættes 
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
   waldtesta <- ((ahat[ii]-a_nul)^2)/ j11y
