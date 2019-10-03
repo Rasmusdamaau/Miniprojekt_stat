@@ -2,8 +2,10 @@ library("tidyverse")
 x_icount <- 10
 n <- 100
 x_i <- 1:x_icount
-waldtesta <- rep(0,n)
-waldtestb <- rep(0,n)
+a_nul <- 0
+beta_nul <- 1
+p_waldtest_a <- rep(0,n)
+p_waldtest_b <- rep(0,n)
 conff1b <- matrix(nrow=n, ncol=2)
 conff1a <- matrix(nrow=n, ncol=2)
 limits <- rep(0,n)
@@ -63,14 +65,16 @@ for (ii in 1:n) {
   lmle <- likelihood(ahat[ii],betahat[ii])
   
   lognorm <- function(a,b) {
-    -2*log(lmle/likelihood(0,1))
+    -2*log(likelihood(a,b)/lmle)
   }
   
-  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii])<=crit
+  resulthypotese[ii] <- lognorm(ahat[ii], beta_nul)<=crit
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
-  waldtesta[ii]  <- ((ahat[ii]-0)^2)/ j11y
-  waldtestb[ii] <- (betahat[ii]-1) ^ 2 / j22y
+  waldtesta <- ((ahat[ii]-a_nul)^2)/ j11y
+  p_waldtest_a[ii] <- 2*pnorm(abs(waldtesta), lower.tail = FALSE)
+  waldtestb <- (betahat[ii]-beta_nul) ^ 2 / j22y
+  p_waldtest_b[ii] <- 2*pnorm(abs(waldtestb), lower.tail = FALSE)
   conff1b[ii,1] <- betahat[ii] - 1.96 * sqrt(abs(j22y))
   conff1b[ii,2] <- betahat[ii] + 1.96 * sqrt(abs(j22y))
   conff1a[ii,1] <- ahat[ii] - 1.96 * sqrt(abs(j11y))
@@ -80,10 +84,10 @@ for (ii in 1:n) {
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
 cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
-confresula <- which(conff1a[,1] < waldtesta & conff1a[,2] > waldtesta); confresula
+confresula <- which(conff1a[,1] < a_nul & conff1a[,2] > a_nul); confresula
 length(confresula)
 cat("Hvilke betahat waldtest ligger inde for confidence intervallet", "\n")
-confresulb <- which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb); confresulb
+confresulb <- which(conff1b[,1] < beta_nul & conff1b[,2] > beta_nul); confresulb
 length(confresulb)
 cat("Number of accepted H0 hypothesis", "\n")
 sum(resulthypotese)
