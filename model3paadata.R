@@ -2,9 +2,12 @@ library("tidyverse")
 x_icount <- 20
 n <- 1
 x_i <- 1:x_icount
-waldtesta <- rep(0,n)
-waldtestb <- rep(0,n)
-waldtestg <- rep(0,n)
+a_nul <- 0
+beta_nul <- 1
+gamma_nul <- 0
+p_waldtest_a <- rep(0,n)
+p_waldtest_b <- rep(0,n)
+p_waldtest_g <- rep(0,n)
 conff1b <- matrix(nrow=n, ncol=2)
 conff1a <- matrix(nrow=n, ncol=2)
 conff1g <- matrix(nrow=n, ncol=2)
@@ -81,16 +84,19 @@ for (ii in 1:n) {
   gammahat[ii] <- 1 / n * sum(ahat[ii]*beta(betahat[ii]))- sum(yi)
   lmle <- likelihood(ahat[ii],betahat[ii], gammahat[ii])
   lognorm <- function(a,b,g) {
-    -2*log(lmle/likelihood(0,1,0))
+    -2*log(likelihood(a,b,g)/lmle)
   }
   
-  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii], gammahat[ii])<=crit
+  resulthypotese[ii] <- lognorm(ahat[ii], betahat[ii], gamma_nul)<=crit
   j22y <- 1 / (sum(ahat[ii] * (2 * x_i - 1) * beta(betahat[ii],2,-1) * x_i) -sum(ahat[ii] * x_i *(x_i - 1)* beta(betahat[ii], 1, 0 ) * yi))
   j11y <- 1 / (sum(beta(betahat[ii],2,0)))
   j33y <- 1 / x_icount
-  waldtesta[ii]  <- ((ahat[ii]-0)^2)/ j11y
-  waldtestb[ii] <- (betahat[ii]-1) ^ 2 / j22y
-  waldtestg[ii] <- (gammahat[ii]-0)^2/ j33y
+  waldtesta <- ((ahat[ii]-a_nul)^2)/ j11y
+  p_waldtest_a[ii] <- 2*pnorm(abs(waldtesta), lower.tail = FALSE)
+  waldtestb <- (betahat[ii]-beta_nul) ^ 2 / j22y
+  p_waldtest_b[ii] <- 2*pnorm(abs(waldtestb), lower.tail = FALSE)
+  waldtestg <- (gammahat[ii]-gamma_nul)^2/ j33y
+  p_waldtest_g[ii] <- 2*pnorm(abs(waldtestg), lower.tail = FALSE)
   conff1b[ii,1] <- betahat[ii] - 1.96 * sqrt(abs(j22y))
   conff1b[ii,2] <- betahat[ii] + 1.96 * sqrt(abs(j22y))
   conff1a[ii,1] <- ahat[ii] - 1.96 * sqrt(abs(j11y))
@@ -102,13 +108,13 @@ for (ii in 1:n) {
   cat("Iteration=", ii, "Limits=", sum(limits),  "Errors=",sum(errors) , "\n") 
 }
 cat("Hvilke ahat waldtest ligger inde for confidence intervallet", "\n")
-confresula <- which(conff1a[,1] < waldtesta & conff1a[,2] > waldtesta); confresula
+confresula <- which(conff1a[,1] < a_nul & conff1a[,2] > a_nul); confresula
 length(confresula)
 cat("Hvilke betahat waldtest ligger inde for confidence intervallet", "\n")
-confresulb <- which(conff1b[,1] < waldtestb & conff1b[,2] > waldtestb); confresulb
+confresulb <- which(conff1b[,1] < beta_nul & conff1b[,2] > beta_nul); confresulb
 length(confresulb)
 cat("Hvilke gammahat waldtest ligger inde for confidence intervallet", "\n")
-confresulg <- which(conff1g[,1] < waldtestg & conff1g[,2] > waldtestg); confresulg
+confresulg <- which(conff1g[,1] < gamma_nul & conff1g[,2] > gamma_nul); confresulg
 length(confresulg)
 cat("Number of accepted H0 hypothesis", "\n")
 sum(resulthypotese)
