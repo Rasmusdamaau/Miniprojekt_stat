@@ -1,6 +1,8 @@
 ---
 title: "Master"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 A number of viables are defined,
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ library(tidyverse)
 ```
 
 
-```{r Second model exercise 5, simulate data, find MLE, test beta = 1}
+```{r "Second model exercise 5, simulate data, find MLE, test beta = 1"}
 n <- 500                
 x_icount <- 10        # How many x and y there is 
 x_i <- 1:x_icount
@@ -105,7 +107,7 @@ sum(resulthypotese_ab)
 
 
 
-```{r repeat 500 times, plot estimates, compare with 95% confidence intervals, exercise 2.2.5.d}
+```{r "repeat 500 times"}
 ahat_plot <- data.frame(x=1:n, y= ahat)
 betahat_plot <- data.frame(x=1:n, y= betahat)
 ahat_betahat <- data.frame(x= ahat, y=betahat)
@@ -126,7 +128,7 @@ ggplot(ahat_betahat, aes(x,y)) +
 
 
 
-```{r exercise 2.5.1, model 2 v 3, MLE with Newton-Raphson, MLE with optim}
+```{r "exercise 2.5.1, model 2 v 3, MLE with Newton-Raphson, MLE with optim"}
 x_icount <- 20
 n <- 1
 x_i <- 1:x_icount
@@ -255,7 +257,7 @@ sum(resulthypotese_optim)
 ```
 
 
-```{r exercise 2.5.1, model 1 v 2, MLE with Newton-Raphson, MLE with optim}
+```{r "exercise 2.5.1, model 1 v 2, MLE with Newton-Raphson, MLE with optim"}
 x_icount <- 20
 n <- 1
 x_i <- 1:20
@@ -374,7 +376,7 @@ sum(resulthypotese_optim)
 
 
 
-```{r exercise 2.5.2, specify parameters, plot data v fitted mean, plot linear regression}
+```{r "exercise 2.5.2, specify parameters, plot data v fitted mean, plot linear regression"}
 
 ```
 
