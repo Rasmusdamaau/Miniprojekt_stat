@@ -14,6 +14,78 @@ library(tidyverse)
 
 ```{r}
 n <- 20
+bv <- c(0,1)
+x_i <- 1:n
+beta_nul <- 1
+y_i <- c(-0.8, 1.15, 1.82, 2.89, 1.43, 0.59, 1.09, 3.00, 2.81, 3.02, 2.39, 3.50, 3.06, 2.41, 2.81, 3.95, 4.19, 5.94, 7.06, 4.55)
+crit <- pchisq(0.95, df = 2, lower.tail = FALSE)
+beta <- function(b,c1 = 1,c2 = 0) {
+  b ^ (c1 * x_i + c2)
+}
+
+ell <- function(ab) {
+  log(prod(exp((-( ab[1] * ab[2]^x_i - y_i)^2)/2 )))
+}
+
+
+param_optim <- optim(bv, ell)$par
+ell_mle <- ell(c(param_optim[1], param_optim[2]))
+
+m2lognorm <- - 2 * (ell(c(param_optim[1], 1)) / ell_mle)
+
+
+resulthypotese_optim <- m2lognorm <=crit 
+j22y <- 1 / (sum(param_optim[1] * (2 * x_i - 1) * beta(param_optim[2],2,-1) * x_i) -
+                 sum(param_optim[1] * x_i *(x_i - 1)* beta(param_optim[2], 1, 0 ) * y_i))
+waldtestb_optim <- (param_optim[2]-beta_nul)^2/ j22y
+p_waldtest_b_optim <- 2*pnorm(abs(waldtestb_optim), lower.tail = FALSE)
+conff1b_optim <- matrix(nrow=1, ncol=2)
+conff1b_optim[,1] <- param_optim[2] - 1.96 * sqrt(abs(j22y))
+conff1b_optim[,2] <- param_optim[2] + 1.96 * sqrt(abs(j22y))
+cat("Was beta0 inside the confidence interval", "\n")
+confresulb_optim <- which(conff1b_optim[,1] < beta_nul & conff1b_optim[,2] > beta_nul) 
+length(confresulb_optim)
+cat("Did beta0 pass the waldtest?", "\n")
+p_waldtest_b_optim>=0.05
+cat("Was m2lognorm less than the critical value?", "\n")
+sum(resulthypotese_optim)
+
+
+```
+
+
+
+```{r}
+crit <- pchisq(0.95, df = 3, lower.tail = FALSE)
+gamma_nul <- 0
+likelihood_v <- function(abg) {
+  log(prod(exp((- ( (abg[1] * abg[2]^x_i +abg[3] )  -y_i)^2)/2)))
+}
+param_optim <- optim(c(0,1,0), likelihood_v)$par
+lmle_optim <- likelihood_v(c(param_optim[1],param_optim[2], param_optim[3]))
+
+m2lognorm <- -2 * (likelihood_v(c(param_optim[1], param_optim[2], 0)) / lmle_optim)
+
+j33y <- 1 / 20
+resulthypotese_optim <- m2lognorm<=crit 
+waldtestg_optim <- (param_optim[3]-gamma_nul)^2/ j33y
+p_waldtest_g_optim <- 2*pnorm(abs(waldtestg_optim), lower.tail = FALSE)
+conff1g_optim <- matrix(nrow=1, ncol=2)
+conff1g_optim[,1] <- param_optim[3] - 1.96 * sqrt(abs(j33y))
+conff1g_optim[,2] <- param_optim[3] + 1.96 * sqrt(abs(j33y))
+cat("Was gamma0 inside the confidence interval", "\n")
+confresulg_optim <- which(conff1g_optim[,1] < gamma_nul & conff1g_optim[,2] > gamma_nul) 
+length(confresulg_optim)
+cat("Did gamma0 pass the waldtest?", "\n")
+p_waldtest_g_optim>=0.05
+cat("Was n2lognorm less than the critical value?", "\n")
+sum(resulthypotese_optim)
+
+```
+
+
+```{r}
+n <- 20
 bv <- c(0,1,0)
 x_i <- 1:n
 # y_i <- rnorm(n, mean = ab[1] * ab[2]^x_i, sd = 1)
@@ -26,30 +98,173 @@ likelihood_m1 <- function(ab) {
 likelihood_m1(bv)
 optim(bv[1], likelihood_m1, method = "BFGS")
 
+
 likelihood_m2 <- function(ab) {
-  prod(exp((((ab[1] * ab[2]^x_i) - y_i)^2)/2))
+  prod(exp((((ab[1] * ab[2] ^ x_i) - y_i
+  ) ^ 2) / 2))
 }
 likelihood_m2(bv)
-optim(bv[1:2], likelihood_m2)
+optim(bv[1:2], likelihood_m2, control=list(fnscale=-1))
 
 likelihood_m3 <- function(ab) {
-  prod(exp((((ab[1] * ab[2]^x_i + ab[3]) - y_i)^2)/2))
+  prod(exp((((ab[1] * ab[2] ^ x_i + ab[3]) - y_i
+  ) ^ 2) / 2))
 }
 likelihood_m3(bv)
 optim(bv, likelihood_m3)
 
 ```
 
+```{r}
+
+x_icount <- 20
+n <- 1
+x_i <- 1:20
+a_nul <- 0
+beta_nul <- 1
+p_waldtest_b <- rep(0,n)
+conff1b <- matrix(nrow=n, ncol=2)
+betahat <- rep(0,n)
+ahat <- rep(0,n)
+bstar <- 2
+resulthypotese <- rep(0,n)
+crit = pchisq(0.05,df=2,lower.tail = FALSE)
+beta <- function(b,c1,c2 = 0) {
+  b ^ (c1 * x_i + c2)
+}
+
+yi <- c(-0.8, 1.15, 1.82, 2.89, 1.43, 0.59, 1.09, 3.00, 2.81, 3.02, 2.39, 3.50, 3.06, 2.41, 2.81, 3.95, 4.19, 5.94, 7.06, 4.55)
+likelihood <- function(a,b) {
+  1 / sqrt(2*pi)^x_icount * prod(exp((( a * b ^x_i -yi)^2)/2))
+}
+
+s <- function(b) {
+  a <- sum(yi)/sum(beta(b,1,0))
+  - sum( a^2 * beta(b,2,-1) * x_i)  +  sum(a * x_i * beta(b,1,-1) * yi)
+}
+
+i <- function(b) {
+  a <- sum(yi)/sum(beta(b,1))
+  ma <- sum(a ^ 2 * 2 * (x_i-1) * beta(b,2,-2) * x_i)-sum(a ^ 2 * x_i * (x_i-1) * beta(b,2,-2))
+  ma^(-1)
+}
+
+intim <- function(b, funk1, funk2) {
+  score <- funk1 
+  fish <- funk2 
+  bk <- b
+  itt <-0
+  itt1 <- 0
+  itt2 <- 0 
+  while(abs(score(bk) * fish(bk))>0.001) {
+    itt<- itt + 1
+    bk = bk + fish(bk) * score(bk)
+    if (!is.finite(score(bk))==TRUE | !is.finite((fish(bk)))==TRUE) {
+      cat("ERROR!", "\n")
+      itt2 <- 1
+      break
+    }
+    if (itt>5000) {
+      cat("break", "\n")
+      itt1 <- 1
+      break(intim)
+    }
+  }
+  c(bk,itt, itt1, itt2)
+}
+resultatintim <- intim(bstar, s, i)
+betahat <-  resultatintim[1] 
+ahat <- sum(yi)/sum(beta(betahat,1,0))
+lmle <- likelihood(ahat,betahat)
+
+lognorm <- function(a,b) {
+  -2*log(likelihood(a,b)/lmle)
+}
+
+resulthypotese <- lognorm(ahat, beta_nul)<=crit #Alpha afhænger af beta, beta_nul indsættes 
+j22y <- 1 / (sum(ahat * (2 * x_i - 1) * beta(betahat,2,-1) * x_i) -
+               sum(ahat * x_i *(x_i - 1)* beta(betahat, 1, 0 ) * yi))
+waldtestb <- (betahat-beta_nul) ^ 2 / j22y
+p_waldtest_b <- 2*pnorm(abs(waldtestb), lower.tail = FALSE)
+conff1b[,1] <- betahat - 1.96 * sqrt(abs(j22y))
+conff1b[,2] <- betahat + 1.96 * sqrt(abs(j22y))
+cat("Was beta0 inside the confidence interval", "\n")
+confresulb <- which(conff1b[,1] < beta_nul & conff1b[,2] > beta_nul) 
+length(confresulb)
+cat("Did beta0 pass the waldtest?", "\n")
+p_waldtest_b>=0.05
+cat("Was n2lognorm less than the critical value?", "\n")
+sum(resulthypotese)
+
+
+
+
+
+
+
+likelihood_v <- function(ab) {
+   1 / sqrt(2*pi)^x_icount * prod(exp(((( ab[1] * ab[2]^x_i) -yi)^2)/2))
+}
+param_optim <- optim(c(0,1), likelihood_v)$par
+lmle_optim <- likelihood(param_optim[1],param_optim[2])
+
+lognorm_optim <- function(ab) {
+  -2*log(likelihood_v(ab)/lmle_optim)
+}
+
+resulthypotese_optim <- lognorm_optim(c(param_optim[1], beta_nul))<=crit 
+j22y <- 1 / (sum(param_optim[1] * (2 * x_i - 1) * beta(param_optim[2],2,-1) * x_i) -
+               sum(param_optim[1] * x_i *(x_i - 1)* beta(param_optim[2], 1, 0 ) * yi))
+waldtestb_optim <- (param_optim[2]-beta_nul)^2/ j22y
+p_waldtest_b_optim <- 2*pnorm(abs(waldtestb_optim), lower.tail = FALSE)
+conff1b_optim <- matrix(nrow=1, ncol=2)
+conff1b_optim[,1] <- param_optim[2] - 1.96 * sqrt(abs(j22y))
+conff1b_optim[,2] <- param_optim[2] + 1.96 * sqrt(abs(j22y))
+cat("Was beta0 inside the confidence interval", "\n")
+confresulb_optim <- which(conff1b_optim[,1] < beta_nul & conff1b_optim[,2] > beta_nul) 
+length(confresulb_optim)
+cat("Did beta0 pass the waldtest?", "\n")
+p_waldtest_b_optim>=0.05
+cat("Was n2lognorm less than the critical value?", "\n")
+sum(resulthypotese_optim)
+
+```
+
+
+
+
 ```{r tester model 3 mod data}
 x_i <- 1:20
-y_data <- c(-0.8, 1.15, 1.82, 2.89, 1.43, 0.59, 1.09, 3.00, 2.81, 3.02, 2.39, 3.50, 3.06, 2.41, 2.81, 3.95, 4.19, 5.94, 7.06, 4.55)
+y_data <-
+  c(
+    -0.8,
+    1.15,
+    1.82,
+    2.89,
+    1.43,
+    0.59,
+    1.09,
+    3.00,
+    2.81,
+    3.02,
+    2.39,
+    3.50,
+    3.06,
+    2.41,
+    2.81,
+    3.95,
+    4.19,
+    5.94,
+    7.06,
+    4.55
+  )
 
 para_m1 <- mean(y_data)
-para_m2 <- 0.896082 * 1.100582^x_i
-para_m3 <- 0.01361894 * 1.421363^x_i - 4.871604
+para_m2 <- 0.896082 * 1.100582 ^ x_i
+para_m3 <- 0.01361894 * 1.421363 ^ x_i - 4.871604
 para_m1_optim <- 2.842996
-para_m2_optim <- 0.3 * 1.2^x_i
-para_m3_optim <- 0.1629630 * 1.2037037^(x_i) + 0.2518519
+para_m2_optim <- 0.3 * 1.2 ^ x_i
+para_m3_optim <- 0.1629630 * 1.2037037 ^ (x_i) + 0.2518519
 
 (para_m1 - y_data) %*% (para_m1 - y_data)
 (para_m2 - y_data) %*% (para_m2 - y_data)
@@ -58,43 +273,133 @@ para_m3_optim <- 0.1629630 * 1.2037037^(x_i) + 0.2518519
 (para_m2_optim - y_data) %*% (para_m2_optim - y_data)
 (para_m3_optim - y_data) %*% (para_m3_optim - y_data)
 
-abline <- coef(lm(y ~ x, data = data.frame(x = 1:length(y_data), y =y_data)))
+abline <-
+  coef(lm(y ~ x, data = data.frame(
+    x = 1:length(y_data), y = y_data
+  )))
 abline_plot <- geom_abline(intercept = abline[1], slope = abline[2])
-test_plot_m1 <- data.frame(x = 1:length(y_data),y = seq(min(y_data, para_m1), max(y_data, para_m1), length = length(y_data)), y_data = y_data, fit_mean = para_m1)
+test_plot_m1 <-
+  data.frame(
+    x = 1:length(y_data),
+    y = seq(min(y_data, para_m1), max(y_data, para_m1), length = length(y_data)),
+    y_data = y_data,
+    fit_mean = para_m1
+  )
 ggplot(test_plot_m1, aes(x, y)) +
-  geom_point(inherit.aes = FALSE, aes(x, y_data), color = "red", size = 3) +
-  geom_point(inherit.aes = FALSE, aes(x, para_m1), color = "blue", size = 3) +
-  labs(x = "index", y = "value") +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, y_data),
+    color = "red",
+    size = 3
+  ) +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, para_m1),
+    color = "blue",
+    size = 3
+  ) +
+  labs(x = "index", y = "value", title = "Model 1") +
   abline_plot
 
-test_plot_m2 <- data.frame(x = 1:length(y_data),y = seq(min(y_data, para_m2), max(y_data, para_m2), length = length(y_data)), y_data = y_data, fit_mean = para_m2)
+test_plot_m2 <-
+  data.frame(
+    x = 1:length(y_data),
+    y = seq(min(y_data, para_m2), max(y_data, para_m2), length = length(y_data)),
+    y_data = y_data,
+    fit_mean = para_m2
+  )
 ggplot(test_plot_m2, aes(x, y)) +
-  geom_point(inherit.aes = FALSE, aes(x, y_data), color = "red", size = 3) +
-  geom_point(inherit.aes = FALSE, aes(x, para_m2), color = "blue", size = 3) +
-  labs(x = "index", y = "value") +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, y_data),
+    color = "red",
+    size = 3
+  ) +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, para_m2),
+    color = "blue",
+    size = 3
+  ) +
+  labs(x = "index", y = "value", title = "Model 2") +
   abline_plot
 
-test_plot_m2_optim <- data.frame(x = 1:length(y_data),y = seq(min(y_data, para_m2_optim), max(y_data, para_m2_optim), length = length(y_data)), y_data = y_data, fit_mean = para_m2_optim)
+test_plot_m2_optim <-
+  data.frame(
+    x = 1:length(y_data),
+    y = seq(
+      min(y_data, para_m2_optim),
+      max(y_data, para_m2_optim),
+      length = length(y_data)
+    ),
+    y_data = y_data,
+    fit_mean = para_m2_optim
+  )
 ggplot(test_plot_m2_optim, aes(x, y)) +
-  geom_point(inherit.aes = FALSE, aes(x, y_data), color = "red", size = 3) +
-  geom_point(inherit.aes = FALSE, aes(x, para_m2_optim), color = "blue", size = 3) +
-  labs(x = "index", y = "value") +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, y_data),
+    color = "red",
+    size = 3
+  ) +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, para_m2_optim),
+    color = "blue",
+    size = 3
+  ) +
+  labs(x = "index", y = "value", title = "Model 2 optim") +
   abline_plot
 
-test_plot_m3 <- data.frame(x = 1:length(y_data),y = seq(min(y_data, para_m3), max(y_data, para_m3), length = length(y_data)), y_data = y_data, fit_mean = para_m3)
+test_plot_m3 <-
+  data.frame(
+    x = 1:length(y_data),
+    y = seq(min(y_data, para_m3), max(y_data, para_m3), length = length(y_data)),
+    y_data = y_data,
+    fit_mean = para_m3
+  )
 ggplot(test_plot_m3, aes(x, y)) +
-  geom_point(inherit.aes = FALSE, aes(x, y_data), color = "red", size = 3) +
-  geom_point(inherit.aes = FALSE, aes(x, para_m3), color = "blue", size = 3) +
-  labs(x = "index", y = "value") +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, y_data),
+    color = "red",
+    size = 3
+  ) +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, para_m3),
+    color = "blue",
+    size = 3
+  ) +
+  labs(x = "index", y = "value", title = "Model 3") +
   abline_plot
 
-test_plot_m3_optim <- data.frame(x = 1:length(y_data),y = seq(min(y_data, para_m3_optim), max(y_data, para_m3_optim), length = length(y_data)), y_data = y_data, fit_mean = para_m3_optim)
+test_plot_m3_optim <-
+  data.frame(
+    x = 1:length(y_data),
+    y = seq(
+      min(y_data, para_m3_optim),
+      max(y_data, para_m3_optim),
+      length = length(y_data)
+    ),
+    y_data = y_data,
+    fit_mean = para_m3_optim
+  )
 ggplot(test_plot_m3_optim, aes(x, y)) +
-  geom_point(inherit.aes = FALSE, aes(x, y_data), color = "red", size = 3) +
-  geom_point(inherit.aes = FALSE, aes(x, para_m3_optim), color = "blue", size = 3) +
-  labs(x = "index", y = "value")+
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, y_data),
+    color = "red",
+    size = 3
+  ) +
+  geom_point(
+    inherit.aes = FALSE,
+    aes(x, para_m3_optim),
+    color = "blue",
+    size = 3
+  ) +
+  labs(x = "index", y = "value", title = "Model 3 optim") +
   abline_plot
-
 
 
 ```
